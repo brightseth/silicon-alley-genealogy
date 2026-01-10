@@ -1,31 +1,44 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+
+interface Person {
+  id: string;
+  name: string;
+  handle: string | null;
+  role: string | null;
+  era: string | null;
+  bio: string | null;
+  avatar_url: string | null;
+  nft_token_id: string | null;
+  nft_minted: boolean;
+  connections: string[];
+}
+
 export default function People() {
-  // Mock people data - will be replaced with real data from database
-  const pioneers = [
-    {
-      name: 'John Borthwick',
-      handle: '@borthwick',
-      role: 'Web Partner Studio / Betaworks',
-      era: '1994-Present',
-      bio: 'Founded Web Partner Studio, later Betaworks. Saw the browser at MIT in March 1994 and never looked back.',
-      connections: ['Janice Fraser', 'Fred Wilson', 'Seth Goldstein'],
-    },
-    {
-      name: 'Seth Goldstein',
-      handle: '@sethgoldstein',
-      role: 'SiteSpecific / Turntable / Bright Moments',
-      era: '1995-Present',
-      bio: 'Started at Agency.com, worked for Michael Wolf, then Condé Net, launched SiteSpecific in August 1995.',
-      connections: ['John Borthwick', 'Scott Heiferman', 'Clay Shirky'],
-    },
-    {
-      name: 'Janice Fraser',
-      handle: '@clevergirl',
-      role: 'Web Partner Studio',
-      era: '1994-Present',
-      bio: 'Co-founder of Web Partner Studio, bringing design thinking to the early web.',
-      connections: ['John Borthwick', 'Guy Garcia'],
-    },
-  ];
+  const [pioneers, setPioneers] = useState<Person[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/people')
+      .then(res => res.json())
+      .then(data => {
+        setPioneers(data.data || []);
+        setLoading(false);
+      })
+      .catch(error => {
+        console.error('Error loading people:', error);
+        setLoading(false);
+      });
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-xl text-gray-600">Loading pioneers...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen py-12 px-4">
@@ -40,47 +53,55 @@ export default function People() {
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {pioneers.map((person, index) => (
-            <div key={index} className="player-card text-white">
+          {pioneers.map((person) => (
+            <div key={person.id} className="player-card text-white">
               <div className="flex items-start justify-between mb-4">
                 <div>
                   <h3 className="text-2xl font-bold mb-1">{person.name}</h3>
-                  <p className="text-sm opacity-80">{person.handle}</p>
+                  {person.handle && <p className="text-sm opacity-80">{person.handle}</p>}
                 </div>
                 <div className="text-4xl">🃏</div>
               </div>
 
-              <div className="mb-4">
-                <div className="text-xs opacity-70 uppercase tracking-wider mb-1">Era</div>
-                <div className="font-semibold">{person.era}</div>
-              </div>
-
-              <div className="mb-4">
-                <div className="text-xs opacity-70 uppercase tracking-wider mb-1">Role</div>
-                <div className="font-semibold">{person.role}</div>
-              </div>
-
-              <div className="mb-4">
-                <p className="text-sm opacity-90 leading-relaxed">{person.bio}</p>
-              </div>
-
-              <div>
-                <div className="text-xs opacity-70 uppercase tracking-wider mb-2">Connections</div>
-                <div className="flex flex-wrap gap-2">
-                  {person.connections.map((connection, i) => (
-                    <span
-                      key={i}
-                      className="inline-block bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full text-xs"
-                    >
-                      {connection}
-                    </span>
-                  ))}
+              {person.era && (
+                <div className="mb-4">
+                  <div className="text-xs opacity-70 uppercase tracking-wider mb-1">Era</div>
+                  <div className="font-semibold">{person.era}</div>
                 </div>
-              </div>
+              )}
+
+              {person.role && (
+                <div className="mb-4">
+                  <div className="text-xs opacity-70 uppercase tracking-wider mb-1">Role</div>
+                  <div className="font-semibold">{person.role}</div>
+                </div>
+              )}
+
+              {person.bio && (
+                <div className="mb-4">
+                  <p className="text-sm opacity-90 leading-relaxed">{person.bio}</p>
+                </div>
+              )}
+
+              {person.connections && person.connections.length > 0 && (
+                <div>
+                  <div className="text-xs opacity-70 uppercase tracking-wider mb-2">Connections</div>
+                  <div className="flex flex-wrap gap-2">
+                    {person.connections.map((connection, i) => (
+                      <span
+                        key={i}
+                        className="inline-block bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full text-xs"
+                      >
+                        {connection}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               <div className="mt-6 pt-4 border-t border-white/20">
                 <button className="w-full bg-white/20 hover:bg-white/30 backdrop-blur-sm px-4 py-2 rounded-lg font-semibold text-sm transition">
-                  Claim Your Card (NFT)
+                  {person.nft_minted ? 'View Your Card (NFT)' : 'Claim Your Card (NFT)'}
                 </button>
               </div>
             </div>

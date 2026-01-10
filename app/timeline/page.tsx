@@ -1,37 +1,46 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+
+interface TimelineEvent {
+  id: string;
+  date: string;
+  title: string;
+  description: string;
+  event_type: string;
+  location: string;
+  people: Array<{ name: string; handle: string }>;
+}
+
 export default function Timeline() {
-  // Mock timeline data - will be replaced with real data from database
-  const events = [
-    {
-      date: 'March 1994',
-      title: 'The Browser Arrives',
-      description: 'John Borthwick drives to MIT to see the Spyglass browser',
-      people: ['John Borthwick'],
-    },
-    {
-      date: 'August 1994',
-      title: 'Web Partner Studio Founded',
-      description: 'Ottawa + Total New York merge into Web Partner Studio',
-      people: ['John Borthwick', 'Janice Fraser'],
-    },
-    {
-      date: 'January 1995',
-      title: 'The Scene Takes Shape',
-      description: 'Lofts, cafes, and makeshift offices across NYC become the heart of web innovation',
-      people: ['Multiple pioneers'],
-    },
-    {
-      date: 'August 1995',
-      title: 'SiteSpecific Launches',
-      description: 'Seth Goldstein starts SiteSpecific after stints at Agency.com and Condé Net',
-      people: ['Seth Goldstein', 'Clay Shirky'],
-    },
-    {
-      date: '1996',
-      title: 'Silicon Alley Boom',
-      description: 'Money starts flowing, companies scaling, the movement gains momentum',
-      people: ['The community'],
-    },
-  ];
+  const [events, setEvents] = useState<TimelineEvent[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/timeline')
+      .then(res => res.json())
+      .then(data => {
+        setEvents(data.data || []);
+        setLoading(false);
+      })
+      .catch(error => {
+        console.error('Error loading timeline:', error);
+        setLoading(false);
+      });
+  }, []);
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-xl text-gray-600">Loading timeline...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen py-12 px-4">
@@ -46,25 +55,30 @@ export default function Timeline() {
         </div>
 
         <div className="space-y-8">
-          {events.map((event, index) => (
-            <div key={index} className="timeline-node bg-white p-6 rounded-lg shadow-md">
+          {events.map((event) => (
+            <div key={event.id} className="timeline-node bg-white p-6 rounded-lg shadow-md">
               <div className="text-sm font-semibold text-silicon-alley-accent mb-2">
-                {event.date}
+                {formatDate(event.date)}
+                {event.location && (
+                  <span className="ml-3 text-gray-500 font-normal">📍 {event.location}</span>
+                )}
               </div>
               <h3 className="text-2xl font-bold mb-3 text-silicon-alley-secondary">
                 {event.title}
               </h3>
               <p className="text-gray-700 mb-4">{event.description}</p>
-              <div className="flex flex-wrap gap-2">
-                {event.people.map((person, i) => (
-                  <span
-                    key={i}
-                    className="inline-block bg-silicon-alley-primary/10 text-silicon-alley-primary px-3 py-1 rounded-full text-sm"
-                  >
-                    {person}
-                  </span>
-                ))}
-              </div>
+              {event.people && event.people.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {event.people.map((person, i) => (
+                    <span
+                      key={i}
+                      className="inline-block bg-silicon-alley-primary/10 text-silicon-alley-primary px-3 py-1 rounded-full text-sm"
+                    >
+                      {person.name}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
           ))}
         </div>
