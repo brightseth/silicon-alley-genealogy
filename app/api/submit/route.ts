@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { sql } from '@vercel/postgres';
 import type { StorySubmission } from '@/app/types';
 
 /**
@@ -17,79 +18,56 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // TODO: Initialize Supabase client
-    // const supabase = createClient(
-    //   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    //   process.env.SUPABASE_SERVICE_ROLE_KEY!
-    // );
+    // Check if person already exists
+    const existingPerson = await sql`
+      SELECT id, name, email FROM people WHERE email = ${body.email}
+    `;
 
-    // TODO: Check if person already exists
-    // let person = await supabase
-    //   .from('people')
-    //   .select('*')
-    //   .eq('email', body.email)
-    //   .single();
+    let personId: string;
 
-    // For now, simulate success with console log
-    console.log('Story submission received:', {
-      name: body.name,
-      email: body.email,
-      handle: body.handle,
-    });
+    if (existingPerson.rows.length > 0) {
+      // Person exists, use their ID
+      personId = existingPerson.rows[0].id;
+    } else {
+      // Create new person
+      const newPerson = await sql`
+        INSERT INTO people (name, email, handle)
+        VALUES (${body.name}, ${body.email}, ${body.handle || null})
+        RETURNING id
+      `;
+      personId = newPerson.rows[0].id;
+    }
 
-    // TODO: Create or update person record
-    // if (!person.data) {
-    //   const { data: newPerson, error: personError } = await supabase
-    //     .from('people')
-    //     .insert({
-    //       name: body.name,
-    //       email: body.email,
-    //       handle: body.handle,
-    //     })
-    //     .select()
-    //     .single();
-    //
-    //   if (personError) throw personError;
-    //   person.data = newPerson;
-    // }
-
-    // TODO: Create story record
-    // const { data: story, error: storyError } = await supabase
-    //   .from('stories')
-    //   .insert({
-    //     person_id: person.data.id,
-    //     where_were_you: body.whereWereYou,
-    //     what_were_you_building: body.whatWereYouBuilding,
-    //     who_inspired_you: body.whoInspiredYou,
-    //     favorite_memory: body.favoriteMemory,
-    //     lessons_learned: body.lessonsLearned,
-    //     status: 'pending',
-    //   })
-    //   .select()
-    //   .single();
-    //
-    // if (storyError) throw storyError;
-
-    // TODO: Parse connections from body.connections
-    // if (body.connections) {
-    //   const connectionNames = body.connections
-    //     .split(',')
-    //     .map(name => name.trim())
-    //     .filter(name => name.length > 0);
-    //
-    //   // Store these for admin to review and create proper connections
-    // }
-
-    // TODO: Send confirmation email
-
-    // TODO: Notify admin of new submission
+    // Create story record
+    const story = await sql`
+      INSERT INTO stories (
+        person_id,
+        where_were_you,
+        what_were_you_building,
+        who_inspired_you,
+        favorite_memory,
+        lessons_learned,
+        connections_mentioned,
+        status
+      ) VALUES (
+        ${personId},
+        ${body.whereWereYou},
+        ${body.whatWereYouBuilding},
+        ${body.whoInspiredYou},
+        ${body.favoriteMemory || null},
+        ${body.lessonsLearned || null},
+        ${body.connections || null},
+        'pending'
+      )
+      RETURNING id
+    `;
 
     return NextResponse.json({
       success: true,
       message: 'Story submitted successfully! We\'ll review it and add you to the genealogy.',
       data: {
-        // story_id: story.id,
-        // person_id: person.data.id,
+        story_id: story.rows[0].id,
+        person_id: personId,
       },
     });
 
@@ -99,6 +77,7 @@ export async function POST(request: NextRequest) {
       {
         success: false,
         error: 'Failed to submit story. Please try again.',
+        details: error instanceof Error ? error.message : 'Unknown error',
       },
       { status: 500 }
     );
