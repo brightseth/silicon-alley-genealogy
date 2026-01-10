@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import VoiceRecorder from '@/components/VoiceRecorder';
+import LinkedInExtract from '@/components/LinkedInExtract';
 
 export default function SubmitStory() {
   const [formData, setFormData] = useState({
@@ -35,6 +36,35 @@ export default function SubmitStory() {
     });
 
     // Scroll to form
+    setShowVoice(false);
+    setTimeout(() => {
+      window.scrollTo({ top: 600, behavior: 'smooth' });
+    }, 100);
+  };
+
+  const handleLinkedInExtract = (data: any) => {
+    // Build story suggestions from LinkedIn jobs
+    let whereWereYou = '';
+    let whatWereYouBuilding = '';
+
+    if (data.jobs && data.jobs.length > 0) {
+      const jobs = data.jobs.filter((j: any) =>
+        j.startDate && (j.startDate.includes('1994') || j.startDate.includes('1995') || j.startDate.includes('1996'))
+      );
+
+      if (jobs.length > 0) {
+        whereWereYou = jobs.map((j: any) => `${j.company} (${j.location || 'NYC'})`).join(', ');
+        whatWereYouBuilding = jobs.map((j: any) => `${j.role} at ${j.company}`).join('; ');
+      }
+    }
+
+    setFormData({
+      ...formData,
+      name: data.name || formData.name,
+      whereWereYou: whereWereYou || formData.whereWereYou,
+      whatWereYouBuilding: whatWereYouBuilding || formData.whatWereYouBuilding,
+    });
+
     setShowVoice(false);
     setTimeout(() => {
       window.scrollTo({ top: 600, behavior: 'smooth' });
@@ -126,8 +156,15 @@ export default function SubmitStory() {
 
         {/* Voice Recorder - V2 Preview */}
         {showVoice && (
-          <div className="mb-12">
+          <div className="mb-8">
             <VoiceRecorder onTranscriptionComplete={handleVoiceTranscription} />
+          </div>
+        )}
+
+        {/* LinkedIn Auto-Extract - V2 Preview */}
+        {showVoice && (
+          <div className="mb-12">
+            <LinkedInExtract onExtractComplete={handleLinkedInExtract} />
           </div>
         )}
 

@@ -1,44 +1,47 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sql } from '@vercel/postgres';
-import type { StorySubmission } from '@/app/types';
 
-/**
- * POST /api/submit
- * Submit a new Silicon Alley story
- */
 export async function POST(request: NextRequest) {
   try {
-    const body: StorySubmission = await request.json();
+    const data = await request.json();
 
     // Validate required fields
-    if (!body.name || !body.email || !body.whereWereYou || !body.whatWereYouBuilding || !body.whoInspiredYou) {
-      return NextResponse.json(
-        { success: false, error: 'Missing required fields' },
-        { status: 400 }
-      );
+    if (!data.name || !data.email || !data.whereWereYou || !data.whatWereYouBuilding || !data.whoInspiredYou) {
+      return NextResponse.json({
+        success: false,
+        error: 'Missing required fields'
+      }, { status: 400 });
     }
 
-    // Check if person already exists
+    // First, check if person exists by email
     const existingPerson = await sql`
-      SELECT id, name, email FROM people WHERE email = ${body.email}
+      SELECT id FROM people WHERE email = ${data.email}
     `;
 
-    let personId: string;
+    let personId;
 
     if (existingPerson.rows.length > 0) {
-      // Person exists, use their ID
+      // Person exists, update their info
       personId = existingPerson.rows[0].id;
+      await sql`
+        UPDATE people
+        SET
+          name = ${data.name},
+          handle = ${data.handle || null},
+          updated_at = NOW()
+        WHERE id = ${personId}
+      `;
     } else {
       // Create new person
       const newPerson = await sql`
-        INSERT INTO people (name, email, handle)
-        VALUES (${body.name}, ${body.email}, ${body.handle || null})
+        INSERT INTO people (name, handle, email, era)
+        VALUES (${data.name}, ${data.handle || null}, ${data.email}, '1995-1996')
         RETURNING id
       `;
       personId = newPerson.rows[0].id;
     }
 
-    // Create story record
+    // Create the story (pending approval)
     const story = await sql`
       INSERT INTO stories (
         person_id,
@@ -49,14 +52,15 @@ export async function POST(request: NextRequest) {
         lessons_learned,
         connections_mentioned,
         status
-      ) VALUES (
+      )
+      VALUES (
         ${personId},
-        ${body.whereWereYou},
-        ${body.whatWereYouBuilding},
-        ${body.whoInspiredYou},
-        ${body.favoriteMemory || null},
-        ${body.lessonsLearned || null},
-        ${body.connections || null},
+        ${data.whereWereYou},
+        ${data.whatWereYouBuilding},
+        ${data.whoInspiredYou},
+        ${data.favoriteMemory || null},
+        ${data.lessonsLearned || null},
+        ${data.connections || null},
         'pending'
       )
       RETURNING id
@@ -64,33 +68,16 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: 'Story submitted successfully! We\'ll review it and add you to the genealogy.',
-      data: {
-        story_id: story.rows[0].id,
-        person_id: personId,
-      },
+      personId,
+      storyId: story.rows[0].id,
+      message: 'Story submitted successfully! It will be reviewed and added to the genealogy.'
     });
 
-  } catch (error) {
-    console.error('Error submitting story:', error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: 'Failed to submit story. Please try again.',
-        details: error instanceof Error ? error.message : 'Unknown error',
-      },
-      { status: 500 }
-    );
+  } catch (error: any) {
+    console.error('Submission error:', error);
+    return NextResponse.json({
+      success: false,
+      error: error.message || 'Failed to submit story'
+    }, { status: 500 });
   }
-}
-
-/**
- * GET /api/submit
- * Not allowed - use POST to submit stories
- */
-export async function GET() {
-  return NextResponse.json(
-    { error: 'Method not allowed. Use POST to submit stories.' },
-    { status: 405 }
-  );
 }

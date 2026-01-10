@@ -1,0 +1,113 @@
+{
+  "meta": {
+    "title": "Silicon Alley Genealogy — V2 Vision",
+    "subtitle": "What if AGI existed in 1995?",
+    "author": "Seth Goldstein",
+    "date": "January 2026",
+    "accent_color": "#FF6B35",
+    "audience": "John Borthwick",
+    "slide_count": 10
+  },
+  "slides": [
+    {
+      "type": "title",
+      "title": "Silicon Alley Genealogy",
+      "subtitle": "What if AGI existed in 1995?",
+      "footer": "30th Anniversary | Jan 28-31, 2026"
+    },
+    {
+      "type": "content",
+      "title": "V1: The Foundation ✓",
+      "bullets": [
+        "Database & API (stories, people, connections)",
+        "Dynamic timeline and people directory",
+        "Admin interface for story approval",
+        "Social sharing with OG images",
+        "Mobile-friendly, NYC aesthetic",
+        "Ready for Jan 30 launch"
+      ],
+      "callout": "This works. It's live. But it's just the beginning..."
+    },
+    {
+      "type": "quote",
+      "quote": "Like the Stage Manager in Thornton Wilder's 'Our Town' - an omniscient narrator who knows everyone, sees all connections, and can tell the story from any angle.",
+      "attribution": null
+    },
+    {
+      "type": "content",
+      "title": "🎤 Voice-First Collection",
+      "bullets": [
+        "Talk instead of type - forms are friction",
+        "AI transcribes + extracts structured data",
+        "Auto-fills: names, places, companies, connections",
+        "Agent asks follow-up questions",
+        "Result: 10x richer stories, 10x easier"
+      ],
+      "callout": "🟢 Prototype live at /submit"
+    },
+    {
+      "type": "content",
+      "title": "💬 Oracle Mode",
+      "bullets": [
+        "Ask the agent anything about Silicon Alley",
+        "Knows all stories, all connections",
+        "Speaks in first person: 'I remember when...'",
+        "Makes unexpected connections",
+        "Guides your exploration"
+      ],
+      "callout": "🟢 Prototype live on all person pages"
+    },
+    {
+      "type": "content",
+      "title": "The Full V2 Roadmap",
+      "bullets": [
+        "Feb 2026: Voice + agent chat (live now!)",
+        "Mar 2026: Interview agent, photo uploads",
+        "Apr 2026: LinkedIn integration, auto-extract",
+        "Summer 2026: Full multi-modal agent"
+      ],
+      "callout": "Building in public. Each feature makes V1 more alive."
+    },
+    {
+      "type": "diagram",
+      "title": "The Agent's 5 Knowledge Layers",
+      "diagram": "┌─────────────────────────────────────────┐\n│  5. NARRATIVE (synthesis)               │\n│     Themes, arcs, contradictions        │\n├─────────────────────────────────────────┤\n│  4. CONTEXT (temporal + cultural)       │\n│     What was happening, what was possible│\n├─────────────────────────────────────────┤\n│  3. CONNECTIONS (graph)                 │\n│     Who worked with whom, relationships │\n├─────────────────────────────────────────┤\n│  2. STORIES (unstructured narrative)    │\n│     Oral histories, anecdotes, memories │\n├─────────────────────────────────────────┤\n│  1. FACTS (structured data)             │\n│     People, companies, dates, events    │\n└─────────────────────────────────────────┘",
+      "caption": "The agent operates across all 5 layers simultaneously"
+    },
+    {
+      "type": "content",
+      "title": "Multi-Perspective Memory",
+      "bullets": [
+        "Same event, different tellings →  Richer truth",
+        "Eddie: 'Chaos. 200 people, servers crashed...'",
+        "Sarah: 'I saw Janice and John talking - that connection...'",
+        "Josh: 'I spent the night keeping servers alive...'",
+        "Agent synthesizes: 'Pseudo's launch was pure Silicon Alley...'"
+      ]
+    },
+    {
+      "type": "content",
+      "title": "Why This Matters",
+      "bullets": [
+        "This is a blueprint for AI-native oral history",
+        "Every community could have an agent like this:",
+        "  • Civil rights movement",
+        "  • Early hip-hop in the Bronx",
+        "  • Women in tech, LGBTQ+ history",
+        "Silicon Alley is the prototype",
+        "Not history in a database. History in a conversation."
+      ]
+    },
+    {
+      "type": "cta",
+      "title": "Try It Now",
+      "action": "silicon-alley-genealogy.vercel.app",
+      "links": [
+        "🎤 Voice: /submit",
+        "💬 Agent: /people",
+        "📖 Vision: /vision",
+        "GitHub: github.com/brightseth/silicon-alley-genealogy"
+      ]
+    }
+  ]
+}

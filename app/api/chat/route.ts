@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
+import { sql } from '@vercel/postgres';
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -16,6 +17,39 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
+    // Fetch all approved stories for this person from the database
+    let stories = [];
+    if (personContext.id) {
+      const storiesResult = await sql`
+        SELECT
+          where_were_you,
+          what_were_you_building,
+          who_inspired_you,
+          favorite_memory,
+          lessons_learned,
+          connections_mentioned
+        FROM stories
+        WHERE person_id = ${personContext.id}
+        AND status = 'approved'
+      `;
+      stories = storiesResult.rows;
+    }
+
+    // Build rich context with database stories
+    let storiesContext = '';
+    if (stories.length > 0) {
+      storiesContext = '\n\nStories from their own words:\n';
+      stories.forEach((story, idx) => {
+        storiesContext += `\nStory ${idx + 1}:\n`;
+        storiesContext += `- Where they were: ${story.where_were_you}\n`;
+        storiesContext += `- What they were building: ${story.what_were_you_building}\n`;
+        storiesContext += `- Who inspired them: ${story.who_inspired_you}\n`;
+        if (story.favorite_memory) storiesContext += `- Favorite memory: ${story.favorite_memory}\n`;
+        if (story.lessons_learned) storiesContext += `- Lessons learned: ${story.lessons_learned}\n`;
+        if (story.connections_mentioned) storiesContext += `- Connections: ${story.connections_mentioned}\n`;
+      });
+    }
+
     // Build system prompt with person context
     const systemPrompt = `You are the Silicon Alley Memory Keeper, an omniscient narrator documenting NYC's tech scene in the 1990s.
 
@@ -26,6 +60,7 @@ ${personContext.bio ? `Bio: ${personContext.bio}` : ''}
 ${personContext.role ? `Role: ${personContext.role}` : ''}
 ${personContext.era ? `Era: ${personContext.era}` : ''}
 ${personContext.connections && personContext.connections.length > 0 ? `Connections: ${personContext.connections.join(', ')}` : ''}
+${storiesContext}
 
 Your personality:
 - NYC direct, warm, slightly nostalgic
