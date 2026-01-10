@@ -54,7 +54,11 @@ export default function People() {
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {pioneers.map((person) => (
-            <div key={person.id} className="player-card text-white">
+            <a
+              key={person.id}
+              href={`/person/${person.id}`}
+              className="player-card text-white hover:scale-105 transition-transform cursor-pointer"
+            >
               <div className="flex items-start justify-between mb-4">
                 <div>
                   <h3 className="text-2xl font-bold mb-1">{person.name}</h3>
@@ -100,11 +104,11 @@ export default function People() {
               )}
 
               <div className="mt-6 pt-4 border-t border-white/20">
-                <button className="w-full bg-white/20 hover:bg-white/30 backdrop-blur-sm px-4 py-2 rounded-lg font-semibold text-sm transition">
-                  {person.nft_minted ? 'View Your Card (NFT)' : 'Claim Your Card (NFT)'}
-                </button>
+                <div className="w-full bg-white/20 backdrop-blur-sm px-4 py-2 rounded-lg font-semibold text-sm text-center">
+                  {person.nft_minted ? 'View Card' : 'View & Share Card'} →
+                </div>
               </div>
-            </div>
+            </a>
           ))}
         </div>
 
