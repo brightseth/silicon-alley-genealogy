@@ -1,0 +1,66 @@
+@import "tailwindcss";
+
+:root {
+  --foreground-rgb: 26, 26, 26;
+  --background-rgb: 244, 244, 244;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --foreground-rgb: 244, 244, 244;
+    --background-rgb: 26, 26, 26;
+  }
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: rgb(var(--background-rgb));
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* Retro terminal aesthetic */
+.terminal {
+  font-family: Monaco, 'Courier New', monospace;
+  background: #1a1a1a;
+  color: #00ff00;
+}
+
+/* Player card styles */
+.player-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+/* Timeline styles */
+.timeline-node {
+  position: relative;
+  padding-left: 40px;
+}
+
+.timeline-node::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #FF6B35;
+  border: 3px solid #fff;
+}
+
+.timeline-node::after {
+  content: '';
+  position: absolute;
+  left: 5px;
+  top: 12px;
+  width: 2px;
+  height: calc(100% + 20px);
+  background: #ddd;
+}
+
+.timeline-node:last-child::after {
+  display: none;
+}
