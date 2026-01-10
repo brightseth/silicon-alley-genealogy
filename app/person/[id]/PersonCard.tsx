@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import PersonChat from '@/components/PersonChat';
 
 interface Person {
   id: string;
@@ -16,6 +17,7 @@ interface Person {
 
 export default function PersonCard({ person }: { person: Person }) {
   const [copied, setCopied] = useState(false);
+  const [showChat, setShowChat] = useState(false);
 
   const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
   const twitterText = `Check out ${person.name}'s Silicon Alley pioneer card! Part of the NYC tech scene that built the social internet. #SiliconAlley30`;
@@ -125,6 +127,28 @@ export default function PersonCard({ person }: { person: Person }) {
               className="w-full"
             />
           </div>
+        </div>
+
+        {/* Agent Chat - V2 Preview */}
+        <div className="mt-8">
+          {!showChat ? (
+            <button
+              onClick={() => setShowChat(true)}
+              className="w-full bg-black text-white px-8 py-4 rounded-lg font-bold text-lg hover:bg-gray-800 transition shadow-lg flex items-center justify-center gap-2"
+            >
+              <span>💬</span>
+              <span>Ask the Agent About {person.name}</span>
+              <span className="text-xs bg-silicon-alley-primary px-2 py-1 rounded">V2</span>
+            </button>
+          ) : (
+            <PersonChat person={{
+              name: person.name,
+              bio: person.bio,
+              role: person.role,
+              era: person.era,
+              connections: person.connections
+            }} />
+          )}
         </div>
 
         {/* Back Link */}

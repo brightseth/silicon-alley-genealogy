@@ -36,6 +36,9 @@ export default function RootLayout({
                   <a href="/submit" className="text-gray-700 hover:text-silicon-alley-primary transition whitespace-nowrap">
                     Submit
                   </a>
+                  <a href="/vision" className="text-silicon-alley-primary hover:text-silicon-alley-secondary transition whitespace-nowrap font-semibold">
+                    V2 →
+                  </a>
                 </div>
               </div>
               <div>
