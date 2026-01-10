@@ -12,6 +12,7 @@
   "author": "Seth Goldstein",
   "license": "MIT",
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.71.2",
     "@tailwindcss/postcss": "^4.1.18",
     "@types/node": "^25.0.5",
     "@types/react": "^19.2.7",

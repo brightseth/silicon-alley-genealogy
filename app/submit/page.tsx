@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import VoiceRecorder from '@/components/VoiceRecorder';
 
 export default function SubmitStory() {
   const [formData, setFormData] = useState({
@@ -17,6 +18,28 @@ export default function SubmitStory() {
 
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showVoice, setShowVoice] = useState(true);
+
+  const handleVoiceTranscription = (data: any) => {
+    // Auto-fill form with transcribed data
+    setFormData({
+      name: data.name || '',
+      handle: data.handle || '',
+      email: data.email || '',
+      whereWereYou: data.whereWereYou || '',
+      whatWereYouBuilding: data.whatWereYouBuilding || '',
+      whoInspiredYou: data.whoInspiredYou || '',
+      favoriteMemory: data.favoriteMemory || '',
+      lessonsLearned: data.lessonsLearned || '',
+      connections: data.connections || '',
+    });
+
+    // Scroll to form
+    setShowVoice(false);
+    setTimeout(() => {
+      window.scrollTo({ top: 600, behavior: 'smooth' });
+    }, 100);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -90,15 +113,39 @@ export default function SubmitStory() {
     <div className="min-h-screen py-12 px-4">
       <div className="max-w-3xl mx-auto">
         <div className="text-center mb-12">
-          <h1 className="text-5xl font-bold mb-4 text-silicon-alley-secondary">
+          <h1 className="text-5xl font-bold mb-4 text-black">
             Share Your Story
           </h1>
-          <p className="text-xl text-gray-700">
+          <p className="text-xl text-gray-900 mb-2">
             Help us preserve the history of Silicon Alley by sharing your memories from 1995-1996.
+          </p>
+          <p className="text-sm text-silicon-alley-primary font-semibold">
+            ⚡ NEW: Try voice recording (V2 preview)
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-8 bg-white p-8 rounded-lg shadow-lg">
+        {/* Voice Recorder - V2 Preview */}
+        {showVoice && (
+          <div className="mb-12">
+            <VoiceRecorder onTranscriptionComplete={handleVoiceTranscription} />
+          </div>
+        )}
+
+        {/* Divider */}
+        <div className="text-center my-12">
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-300"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-4 bg-gray-50 text-gray-600">
+                {showVoice ? 'Or use the traditional form below' : 'Review and edit your story'}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-8 bg-white p-8 rounded-lg shadow-lg border-2 border-gray-200">
           {/* Basic Info */}
           <div className="space-y-6">
             <h2 className="text-2xl font-bold text-silicon-alley-secondary border-b pb-2">
