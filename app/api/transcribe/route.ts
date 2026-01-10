@@ -14,15 +14,29 @@ export async function POST(request: NextRequest) {
   try {
     const { audio } = await request.json();
 
-    if (!audio) {
+    // Input validation
+    const MAX_AUDIO_SIZE = 25 * 1024 * 1024; // 25MB
+
+    if (!audio || typeof audio !== 'string') {
       return NextResponse.json({
         success: false,
-        error: 'No audio data provided'
+        error: 'Invalid audio data'
       }, { status: 400 });
     }
 
+    // Check audio size before processing
+    const base64Data = audio.replace(/^data:audio\/\w+;base64,/, '');
+    const bufferSize = (base64Data.length * 3) / 4;
+
+    if (bufferSize > MAX_AUDIO_SIZE) {
+      return NextResponse.json({
+        success: false,
+        error: 'Audio file too large (max 25MB)'
+      }, { status: 413 });
+    }
+
     // Step 1: Convert base64 audio to Buffer
-    const audioBuffer = Buffer.from(audio.replace(/^data:audio\/\w+;base64,/, ''), 'base64');
+    const audioBuffer = Buffer.from(base64Data, 'base64');
 
     // Step 2: Create a File object for Whisper
     const audioFile = new File([audioBuffer], 'recording.webm', { type: 'audio/webm' });

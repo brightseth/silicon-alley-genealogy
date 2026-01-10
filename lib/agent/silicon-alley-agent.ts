@@ -102,10 +102,19 @@ export async function runSiliconAlleyAgent(
   let conversationMessages = [...messages];
   const toolUsesLog: any[] = [];
   const maxIterations = 10; // Prevent infinite loops
+  const MAX_MESSAGES = 20; // Prevent unbounded memory growth
   let iterations = 0;
 
   while (iterations < maxIterations) {
     iterations++;
+
+    // Limit conversation history to prevent memory issues
+    if (conversationMessages.length > MAX_MESSAGES) {
+      conversationMessages = [
+        conversationMessages[0], // Keep first message for context
+        ...conversationMessages.slice(-MAX_MESSAGES)
+      ];
+    }
 
     try {
       const response = await anthropic.messages.create({

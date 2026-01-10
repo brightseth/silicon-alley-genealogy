@@ -99,7 +99,7 @@ export const findSharedHistory: Tool = {
         s.connections_mentioned
       FROM stories s
       JOIN people p ON s.person_id = p.id
-      WHERE p.name ILIKE ${'%' + person_a + '%'}
+      WHERE p.name ILIKE '%' || ${person_a} || '%'
       AND s.status = 'approved'
     `;
 
@@ -112,7 +112,7 @@ export const findSharedHistory: Tool = {
         s.connections_mentioned
       FROM stories s
       JOIN people p ON s.person_id = p.id
-      WHERE p.name ILIKE ${'%' + person_b + '%'}
+      WHERE p.name ILIKE '%' || ${person_b} || '%'
       AND s.status = 'approved'
     `;
 
@@ -216,10 +216,10 @@ export const suggestConnections: Tool = {
       FROM stories s
       JOIN people p ON s.person_id = p.id
       WHERE (
-        s.what_were_you_building ILIKE ${'%' + (story.what_were_you_building || context || '') + '%'}
-        OR s.where_were_you ILIKE ${'%' + (story.where_were_you || context || '') + '%'}
+        s.what_were_you_building ILIKE '%' || ${story.what_were_you_building || context || ''} || '%'
+        OR s.where_were_you ILIKE '%' || ${story.where_were_you || context || ''} || '%'
       )
-      AND p.name NOT ILIKE ${'%' + person_name + '%'}
+      AND p.name NOT ILIKE '%' || ${person_name} || '%'
       AND s.status = 'approved'
       LIMIT 10
     `;

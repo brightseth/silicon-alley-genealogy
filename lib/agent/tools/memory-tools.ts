@@ -191,7 +191,7 @@ export const recallMemories: Tool = {
           s.submitted_at
         FROM stories s
         JOIN people p ON s.person_id = p.id
-        WHERE p.name ILIKE ${'%' + person_name + '%'}
+        WHERE p.name ILIKE '%' || ${person_name} || '%'
         AND s.status = 'approved'
         ORDER BY s.submitted_at DESC
         LIMIT ${limit}
@@ -211,9 +211,9 @@ export const recallMemories: Tool = {
         FROM stories s
         JOIN people p ON s.person_id = p.id
         WHERE (
-          s.what_were_you_building ILIKE ${'%' + company + '%'}
-          OR s.where_were_you ILIKE ${'%' + company + '%'}
-          OR s.connections_mentioned ILIKE ${'%' + company + '%'}
+          s.what_were_you_building ILIKE '%' || ${company} || '%'
+          OR s.where_were_you ILIKE '%' || ${company} || '%'
+          OR s.connections_mentioned ILIKE '%' || ${company} || '%'
         )
         AND s.status = 'approved'
         ORDER BY s.submitted_at DESC
@@ -234,11 +234,11 @@ export const recallMemories: Tool = {
         FROM stories s
         JOIN people p ON s.person_id = p.id
         WHERE (
-          s.where_were_you ILIKE ${'%' + keyword + '%'}
-          OR s.what_were_you_building ILIKE ${'%' + keyword + '%'}
-          OR s.who_inspired_you ILIKE ${'%' + keyword + '%'}
-          OR s.favorite_memory ILIKE ${'%' + keyword + '%'}
-          OR s.lessons_learned ILIKE ${'%' + keyword + '%'}
+          s.where_were_you ILIKE '%' || ${keyword} || '%'
+          OR s.what_were_you_building ILIKE '%' || ${keyword} || '%'
+          OR s.who_inspired_you ILIKE '%' || ${keyword} || '%'
+          OR s.favorite_memory ILIKE '%' || ${keyword} || '%'
+          OR s.lessons_learned ILIKE '%' || ${keyword} || '%'
         )
         AND s.status = 'approved'
         ORDER BY s.submitted_at DESC

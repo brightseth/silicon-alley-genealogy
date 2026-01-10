@@ -8,11 +8,38 @@ export async function POST(request: NextRequest) {
   try {
     const { messages, mode = 'oracle' } = await request.json();
 
+    // Input validation
     if (!messages || !Array.isArray(messages)) {
       return NextResponse.json({
         success: false,
         error: 'Messages array required'
       }, { status: 400 });
+    }
+
+    // Validate messages structure and limit
+    const MAX_MESSAGES = 50;
+    if (messages.length === 0) {
+      return NextResponse.json({
+        success: false,
+        error: 'At least one message required'
+      }, { status: 400 });
+    }
+
+    if (messages.length > MAX_MESSAGES) {
+      return NextResponse.json({
+        success: false,
+        error: `Too many messages (max ${MAX_MESSAGES})`
+      }, { status: 400 });
+    }
+
+    // Validate each message has role and content
+    for (const msg of messages) {
+      if (!msg.role || !msg.content) {
+        return NextResponse.json({
+          success: false,
+          error: 'Each message must have role and content'
+        }, { status: 400 });
+      }
     }
 
     // Validate mode
