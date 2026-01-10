@@ -54,7 +54,7 @@ Also include a "transcription" field with the full verbatim transcript.
 Be warm and conversational in how you structure the data - preserve their voice.`
           }
         ]
-      })
+      }]
     });
 
     const content = response.content[0];
