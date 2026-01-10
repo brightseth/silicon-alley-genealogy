@@ -7,7 +7,19 @@ interface Props {
   params: Promise<{ id: string }>;
 }
 
-async function getPerson(id: string) {
+interface Person {
+  id: string;
+  name: string;
+  handle: string | null;
+  role: string | null;
+  era: string | null;
+  bio: string | null;
+  avatar_url: string | null;
+  nft_minted: boolean;
+  connections: string[];
+}
+
+async function getPerson(id: string): Promise<Person | null> {
   try {
     const result = await sql`
       SELECT id, name, handle, role, era, bio, avatar_url, nft_minted
@@ -34,8 +46,8 @@ async function getPerson(id: string) {
 
     return {
       ...result.rows[0],
-      connections: connections.rows.map(c => c.name),
-    };
+      connections: connections.rows.map(c => c.name as string),
+    } as Person;
   } catch (error) {
     console.error('Error fetching person:', error);
     return null;
