@@ -22,24 +22,24 @@ export default function RootLayout({
         <nav className="border-b border-gray-200 bg-white/80 backdrop-blur-sm sticky top-0 z-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between h-16 items-center">
-              <div className="flex items-center space-x-8">
-                <a href="/" className="text-2xl font-bold text-silicon-alley-primary">
+              <div className="flex items-center space-x-4 md:space-x-8">
+                <a href="/" className="text-xl md:text-2xl font-bold text-silicon-alley-primary">
                   Silicon Alley 30
                 </a>
-                <div className="hidden md:flex space-x-6">
+                <div className="flex space-x-3 md:space-x-6 text-sm md:text-base">
                   <a href="/timeline" className="text-gray-700 hover:text-silicon-alley-primary transition">
                     Timeline
                   </a>
                   <a href="/people" className="text-gray-700 hover:text-silicon-alley-primary transition">
                     People
                   </a>
-                  <a href="/submit" className="text-gray-700 hover:text-silicon-alley-primary transition">
-                    Share Your Story
+                  <a href="/submit" className="text-gray-700 hover:text-silicon-alley-primary transition whitespace-nowrap">
+                    Submit
                   </a>
                 </div>
               </div>
               <div>
-                <span className="text-sm text-gray-600">Jan 28-31, 2026</span>
+                <span className="text-xs md:text-sm text-gray-600 whitespace-nowrap">Jan 28-31</span>
               </div>
             </div>
           </div>

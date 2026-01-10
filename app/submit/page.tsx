@@ -16,31 +16,51 @@ export default function SubmitStory() {
   });
 
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
 
-    // TODO: Send to API endpoint
-    console.log('Submitting story:', formData);
-
-    // For now, just show success message
-    setSubmitted(true);
-
-    // Reset form after 3 seconds
-    setTimeout(() => {
-      setSubmitted(false);
-      setFormData({
-        name: '',
-        handle: '',
-        email: '',
-        whereWereYou: '',
-        whatWereYouBuilding: '',
-        whoInspiredYou: '',
-        favoriteMemory: '',
-        lessonsLearned: '',
-        connections: '',
+    try {
+      const response = await fetch('/api/submit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
       });
-    }, 3000);
+
+      const result = await response.json();
+
+      if (result.success) {
+        setLoading(false);
+        setSubmitted(true);
+
+        // Reset form after 3 seconds
+        setTimeout(() => {
+          setSubmitted(false);
+          setFormData({
+            name: '',
+            handle: '',
+            email: '',
+            whereWereYou: '',
+            whatWereYouBuilding: '',
+            whoInspiredYou: '',
+            favoriteMemory: '',
+            lessonsLearned: '',
+            connections: '',
+          });
+        }, 3000);
+      } else {
+        setLoading(false);
+        alert(`Error: ${result.error}`);
+      }
+    } catch (error) {
+      setLoading(false);
+      console.error('Submission error:', error);
+      alert('Failed to submit story. Please try again.');
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -248,9 +268,10 @@ export default function SubmitStory() {
           <div className="pt-6">
             <button
               type="submit"
-              className="w-full bg-silicon-alley-primary text-white py-4 rounded-lg font-semibold text-lg hover:bg-opacity-90 transition shadow-lg"
+              disabled={loading}
+              className="w-full bg-silicon-alley-primary text-white py-4 rounded-lg font-semibold text-lg hover:bg-opacity-90 transition shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Submit Your Story
+              {loading ? 'Submitting...' : 'Submit Your Story'}
             </button>
             <p className="text-sm text-gray-500 text-center mt-4">
               By submitting, you agree to have your story included in the Silicon Alley genealogy
