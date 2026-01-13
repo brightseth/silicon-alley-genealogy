@@ -5,79 +5,151 @@ const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 });
 
+interface ExtractedData {
+  name?: string;
+  handle?: string;
+  email?: string;
+  whereWereYou?: string;
+  whatWereYouBuilding?: string;
+  whoInspiredYou?: string;
+  favoriteMemory?: string;
+  lessonsLearned?: string;
+  connections?: string;
+}
+
 export async function POST(request: NextRequest) {
   try {
-    const { initialStory, conversationHistory, questionCount } = await request.json();
+    const { conversationHistory, currentExtraction } = await request.json();
 
-    // After 3 follow-ups, we're done
-    if (questionCount >= 3) {
-      // Extract all data from the full conversation
-      const fullTranscript = conversationHistory
-        .filter((m: any) => m.role === 'user')
-        .map((m: any) => m.content)
-        .join(' ');
+    // Build the full transcript
+    const fullTranscript = conversationHistory
+      .filter((m: any) => m.role === 'user')
+      .map((m: any) => m.content)
+      .join('\n\n');
 
-      const extraction = await anthropic.messages.create({
+    // First, extract any new data from the conversation
+    const extractionPrompt = `You are extracting Silicon Alley story data from an interview conversation.
+
+Interview transcript (user responses only):
+"${fullTranscript}"
+
+Current extracted data:
+${JSON.stringify(currentExtraction || {}, null, 2)}
+
+Extract any NEW information not already captured. Return ONLY valid JSON with these keys (use null for fields not mentioned):
+{
+  "name": "full name if mentioned",
+  "handle": "social handle if mentioned",
+  "email": "email if mentioned",
+  "whereWereYou": "location/office/neighborhood in 1995",
+  "whatWereYouBuilding": "company/project/work",
+  "whoInspiredYou": "people/companies/influences",
+  "favoriteMemory": "specific memorable moment",
+  "lessonsLearned": "insights/reflections",
+  "connections": "names of other people mentioned"
+}
+
+Only include fields that have NEW info from the latest responses.`;
+
+    const extraction = await anthropic.messages.create({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1024,
+      messages: [{
+        role: 'user',
+        content: extractionPrompt
+      }]
+    });
+
+    let extractedData: ExtractedData = {};
+    const extractContent = extraction.content[0];
+    if (extractContent.type === 'text') {
+      const jsonMatch = extractContent.text.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0]);
+        // Only keep non-null values
+        Object.keys(parsed).forEach(key => {
+          if (parsed[key] && parsed[key] !== 'null') {
+            extractedData[key as keyof ExtractedData] = parsed[key];
+          }
+        });
+      }
+    }
+
+    // Merge with current extraction
+    const mergedData = { ...currentExtraction, ...extractedData };
+
+    // Count how many core fields we have
+    const coreFields = ['whereWereYou', 'whatWereYouBuilding', 'whoInspiredYou'];
+    const filledCoreFields = coreFields.filter(f => mergedData[f as keyof ExtractedData]);
+    const userMessageCount = conversationHistory.filter((m: any) => m.role === 'user').length;
+
+    // Decide if we should complete or ask follow-up
+    const isComplete = filledCoreFields.length >= 3 || userMessageCount >= 5;
+
+    if (isComplete) {
+      // Generate a closing summary
+      const closingPrompt = `You are the Silicon Alley memory keeper. The interview is complete.
+
+Here's what you captured:
+${JSON.stringify(mergedData, null, 2)}
+
+Write a warm, brief closing (2-3 sentences) thanking them and summarizing what you learned. Mention you'll add them to the archive.`;
+
+      const closing = await anthropic.messages.create({
         model: 'claude-sonnet-4-20250514',
-        max_tokens: 2048,
+        max_tokens: 256,
         messages: [{
           role: 'user',
-          content: `Extract Silicon Alley story data from this interview:
-
-${fullTranscript}
-
-Return as JSON with these keys: name, handle, email, whereWereYou, whatWereYouBuilding, whoInspiredYou, favoriteMemory, lessonsLearned, connections`
+          content: closingPrompt
         }]
       });
 
-      const content = extraction.content[0];
-      if (content.type !== 'text') throw new Error('Unexpected response');
-
-      const jsonMatch = content.text.match(/\{[\s\S]*\}/);
-      const extractedData = jsonMatch ? JSON.parse(jsonMatch[0]) : {};
+      const closeContent = closing.content[0];
+      const closingText = closeContent.type === 'text' ? closeContent.text : "Thanks for sharing your story!";
 
       return NextResponse.json({
         success: true,
-        done: true,
-        extractedData
+        isComplete: true,
+        response: closingText,
+        extractedData: mergedData
       });
     }
 
-    // Generate next follow-up question
-    const questionPrompt = `You are interviewing someone about their Silicon Alley experience in 1995-1996.
-
-Initial story: ${initialStory}
+    // Generate a conversational follow-up question
+    const followUpPrompt = `You are the Silicon Alley memory keeper, conducting a warm conversational interview about NYC's 1990s tech scene.
 
 Conversation so far:
-${conversationHistory.map((m: any) => `${m.role}: ${m.content}`).join('
-')}
+${conversationHistory.map((m: any) => `${m.role === 'user' ? 'Pioneer' : 'You'}: ${m.content}`).join('\n\n')}
 
-This is follow-up #${questionCount + 1} of 3.
+Data captured so far:
+${JSON.stringify(mergedData, null, 2)}
 
-Ask a specific, engaging follow-up question that will enrich their story. Focus on:
-- Specific moments or memories
-- Other people they worked with
-- What they learned or challenges they faced
-- Cultural details about Silicon Alley
+What to ask about next (in priority order):
+${!mergedData.whereWereYou ? '- Where they were in 1995 (office, neighborhood, vibe)' : ''}
+${!mergedData.whatWereYouBuilding ? '- What they were building (company, project, mission)' : ''}
+${!mergedData.whoInspiredYou ? '- Who inspired them (people, companies, mentors)' : ''}
+${!mergedData.favoriteMemory ? '- A specific memorable moment' : ''}
+${!mergedData.connections ? '- Other people they worked with' : ''}
 
-Keep the question conversational and under 30 words.`;
+Write your next question or response. Be conversational, curious, and warm. Reference what they just told you. Keep it natural - like a conversation at a reunion, not a formal interview. One question or comment at a time, under 40 words.`;
 
-    const response = await anthropic.messages.create({
+    const followUp = await anthropic.messages.create({
       model: 'claude-sonnet-4-20250514',
       max_tokens: 256,
       messages: [{
         role: 'user',
-        content: questionPrompt
+        content: followUpPrompt
       }]
     });
 
-    const content = response.content[0];
-    if (content.type !== 'text') throw new Error('Unexpected response');
+    const followContent = followUp.content[0];
+    const followUpText = followContent.type === 'text' ? followContent.text.trim() : "Tell me more about that time.";
 
     return NextResponse.json({
       success: true,
-      done: false,
-      question: content.text.trim()
+      isComplete: false,
+      response: followUpText,
+      extractedData: mergedData
     });
 
   } catch (error: any) {

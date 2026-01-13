@@ -83,12 +83,12 @@ Focus on Silicon Alley companies and NYC tech roles from the 1994-1996 era.`
     // Auto-generate story suggestions from work history
     let storySuggestions = '';
     if (data.jobs && data.jobs.length > 0) {
-      const siliconAlleyJobs = data.jobs.filter(j => 
+      const siliconAlleyJobs = data.jobs.filter((j: any) =>
         j.startDate && (j.startDate.includes('1994') || j.startDate.includes('1995') || j.startDate.includes('1996'))
       );
 
       if (siliconAlleyJobs.length > 0) {
-        const companies = siliconAlleyJobs.map(j => j.company).join(', ');
+        const companies = siliconAlleyJobs.map((j: any) => j.company).join(', ');
         storySuggestions = `Based on your LinkedIn, you were at ${companies} during the Silicon Alley era. Tell us about that time!`;
       }
     }

@@ -2,7 +2,9 @@
 
 import { useState } from 'react';
 import VoiceRecorder from '@/components/VoiceRecorder';
+import VoiceInterview from '@/components/VoiceInterview';
 import LinkedInExtract from '@/components/LinkedInExtract';
+import PhotoUpload from '@/components/PhotoUpload';
 
 export default function SubmitStory() {
   const [formData, setFormData] = useState({
@@ -154,17 +156,67 @@ export default function SubmitStory() {
           </p>
         </div>
 
-        {/* Voice Recorder - V2 Preview */}
+        {/* Voice Options - V2 Preview */}
         {showVoice && (
-          <div className="mb-8">
-            <VoiceRecorder onTranscriptionComplete={handleVoiceTranscription} />
+          <div className="mb-8 space-y-4">
+            {/* New Conversational Interview - Featured */}
+            <VoiceInterview onComplete={(data) => {
+              setFormData({
+                name: data.name || '',
+                handle: data.handle || '',
+                email: data.email || '',
+                whereWereYou: data.whereWereYou || '',
+                whatWereYouBuilding: data.whatWereYouBuilding || '',
+                whoInspiredYou: data.whoInspiredYou || '',
+                favoriteMemory: data.favoriteMemory || '',
+                lessonsLearned: data.lessonsLearned || '',
+                connections: data.connections || '',
+              });
+              setShowVoice(false);
+              setTimeout(() => window.scrollTo({ top: 600, behavior: 'smooth' }), 100);
+            }} />
+
+            {/* Quick Voice (fallback) */}
+            <details className="mt-4">
+              <summary className="text-sm text-gray-500 cursor-pointer hover:text-gray-700">
+                Or use quick voice recording (no follow-up questions)
+              </summary>
+              <div className="mt-4">
+                <VoiceRecorder onTranscriptionComplete={handleVoiceTranscription} />
+              </div>
+            </details>
           </div>
         )}
 
         {/* LinkedIn Auto-Extract - V2 Preview */}
         {showVoice && (
-          <div className="mb-12">
+          <div className="mb-8">
             <LinkedInExtract onExtractComplete={handleLinkedInExtract} />
+          </div>
+        )}
+
+        {/* Photo Upload - V2 Preview */}
+        {showVoice && (
+          <div className="mb-12">
+            <PhotoUpload onAnalysisComplete={(analysis, imageUrl) => {
+              // Add photo context to the form
+              if (analysis.location) {
+                setFormData(prev => ({
+                  ...prev,
+                  whereWereYou: prev.whereWereYou
+                    ? `${prev.whereWereYou} [Photo: ${analysis.location}]`
+                    : `[From photo: ${analysis.location}]`
+                }));
+              }
+              if (analysis.people_description) {
+                setFormData(prev => ({
+                  ...prev,
+                  connections: prev.connections
+                    ? `${prev.connections}, [Photo: ${analysis.people_description}]`
+                    : `[From photo: ${analysis.people_description}]`
+                }));
+              }
+            }} />
           </div>
         )}
 

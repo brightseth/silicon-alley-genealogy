@@ -15,7 +15,14 @@ interface Person {
   connections: string[];
 }
 
-export default function PersonCard({ person }: { person: Person }) {
+interface RelatedPerson {
+  id: string;
+  name: string;
+  role: string | null;
+  reason: string;
+}
+
+export default function PersonCard({ person, relatedPeople = [] }: { person: Person; relatedPeople?: RelatedPerson[] }) {
   const [copied, setCopied] = useState(false);
   const [showChat, setShowChat] = useState(false);
 
@@ -128,6 +135,33 @@ export default function PersonCard({ person }: { person: Person }) {
             />
           </div>
         </div>
+
+        {/* Related Pioneers */}
+        {relatedPeople.length > 0 && (
+          <div className="bg-white p-8 rounded-lg shadow-lg border-2 border-gray-200 mt-8">
+            <h2 className="text-2xl font-bold mb-4 text-black">Related Pioneers</h2>
+            <p className="text-gray-600 mb-6 text-sm">People connected to {person.name} in the Silicon Alley genealogy</p>
+            <div className="space-y-3">
+              {relatedPeople.map((related) => (
+                <a
+                  key={related.id}
+                  href={`/person/${related.id}`}
+                  className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition border border-gray-200"
+                >
+                  <div>
+                    <div className="font-semibold text-black">{related.name}</div>
+                    {related.role && (
+                      <div className="text-sm text-gray-600">{related.role}</div>
+                    )}
+                  </div>
+                  <div className="text-xs text-silicon-alley-primary bg-silicon-alley-primary/10 px-3 py-1 rounded-full">
+                    {related.reason}
+                  </div>
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Agent Chat - V2 Preview */}
         <div className="mt-8">

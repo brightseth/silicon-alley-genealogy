@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nLaunch-ready landing page + enhanced timeline\n\n- Updated homepage with AI Oracle CTA, $ALLEY token preview, pioneer list\n- Event countdown \\(Jan 28-31 at Betaworks, 1000+ RSVPs\\)\n- Beautiful dark timeline with 10 key Silicon Alley moments \\(1994-1996\\)\n- Alternating left/right layout with event type icons\n- Links to /demo AI Oracle throughout\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")"
+    ]
+  }
+}

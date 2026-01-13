@@ -3,6 +3,79 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 
+// Agent narrative component
+function AgentNarrative() {
+  const [narrative, setNarrative] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+
+  const generateNarrative = async () => {
+    if (narrative) {
+      setExpanded(!expanded);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await fetch('/api/agent', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: [{
+            role: 'user',
+            content: 'Tell me the story of Silicon Alley from 1994 to 1996. What was it like? Who were the key players? What made it special?'
+          }],
+          mode: 'oracle'
+        })
+      });
+      const result = await response.json();
+      if (result.success) {
+        setNarrative(result.response);
+        setExpanded(true);
+      }
+    } catch (error) {
+      console.error('Error generating narrative:', error);
+    }
+    setLoading(false);
+  };
+
+  return (
+    <div className="mb-12 bg-gradient-to-r from-purple-900/50 to-pink-900/50 rounded-2xl border border-white/10 overflow-hidden">
+      <button
+        onClick={generateNarrative}
+        disabled={loading}
+        className="w-full p-6 text-left flex items-center justify-between hover:bg-white/5 transition"
+      >
+        <div className="flex items-center gap-4">
+          <span className="text-4xl">🎭</span>
+          <div>
+            <div className="text-lg font-semibold text-white">
+              {loading ? 'The Agent is remembering...' : 'Ask the Agent: What was Silicon Alley really like?'}
+            </div>
+            <div className="text-sm text-purple-300">
+              {narrative ? 'Click to collapse' : 'Click to hear the story'}
+            </div>
+          </div>
+        </div>
+        <div className={`text-2xl transition-transform ${expanded ? 'rotate-180' : ''}`}>
+          {loading ? '⏳' : '↓'}
+        </div>
+      </button>
+
+      {expanded && narrative && (
+        <div className="px-6 pb-6 border-t border-white/10">
+          <div className="mt-6 text-gray-300 leading-relaxed whitespace-pre-wrap">
+            {narrative}
+          </div>
+          <div className="mt-4 text-xs text-purple-400">
+            — The Silicon Alley Memory Keeper
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 interface TimelineEvent {
   id: string;
   date: string;
@@ -171,6 +244,9 @@ export default function Timeline() {
 
       {/* Timeline */}
       <div className="max-w-4xl mx-auto px-4 py-16">
+        {/* Agent Narrative - V2 Feature */}
+        <AgentNarrative />
+
         <div className="relative">
           {/* Vertical line */}
           <div className="absolute left-4 md:left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-silicon-alley-primary via-purple-500 to-silicon-alley-primary opacity-50" />

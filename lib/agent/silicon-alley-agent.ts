@@ -130,7 +130,7 @@ export async function runSiliconAlleyAgent(
 
       if (toolUseBlocks.length === 0) {
         // No tools used, return final response
-        const textBlock = response.content.find((c: any) => c.type === 'text');
+        const textBlock = response.content.find((c: any) => c.type === 'text') as any;
         return {
           response: textBlock ? textBlock.text : 'I\'m not sure how to help with that.',
           tool_uses: toolUsesLog,
@@ -146,7 +146,7 @@ export async function runSiliconAlleyAgent(
 
       const toolResults: any[] = [];
 
-      for (const toolUse of toolUseBlocks) {
+      for (const toolUse of toolUseBlocks as any[]) {
         const tool = allTools.find(t => t.name === toolUse.name);
 
         if (!tool) {

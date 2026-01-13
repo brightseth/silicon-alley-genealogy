@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Fetch all approved stories for this person from the database
-    let stories = [];
+    let stories: any[] = [];
     if (personContext.id) {
       const storiesResult = await sql`
         SELECT
