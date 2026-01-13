@@ -29,9 +29,10 @@ async function getPerson(personId: string): Promise<Person | null> {
 export default async function ClaimPage({
   params,
 }: {
-  params: { personId: string };
+  params: Promise<{ personId: string }>;
 }) {
-  const person = await getPerson(params.personId);
+  const { personId } = await params;
+  const person = await getPerson(personId);
 
   if (!person) {
     notFound();
@@ -120,9 +121,10 @@ export default async function ClaimPage({
 export async function generateMetadata({
   params,
 }: {
-  params: { personId: string };
+  params: Promise<{ personId: string }>;
 }) {
-  const person = await getPerson(params.personId);
+  const { personId } = await params;
+  const person = await getPerson(personId);
 
   if (!person) {
     return { title: 'Pioneer Not Found' };
