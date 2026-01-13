@@ -7,15 +7,15 @@ interface Person {
   id: string;
   name: string;
   handle: string | null;
-  title: string | null;
-  company: string | null;
+  role: string | null;
+  era: string | null;
   bio: string | null;
 }
 
 async function getPerson(personId: string): Promise<Person | null> {
   try {
     const { rows } = await sql`
-      SELECT id, name, handle, title, company, bio
+      SELECT id, name, handle, role, era, bio
       FROM people
       WHERE id = ${personId}
     `;
@@ -76,9 +76,14 @@ export default async function ClaimPage({
             <p>
               <strong>Pioneer:</strong> {person.name}
             </p>
-            {person.title && person.company && (
+            {person.role && (
               <p>
-                <strong>Role:</strong> {person.title} at {person.company}
+                <strong>Role:</strong> {person.role}
+              </p>
+            )}
+            {person.era && (
+              <p>
+                <strong>Era:</strong> {person.era}
               </p>
             )}
             {person.bio && (
