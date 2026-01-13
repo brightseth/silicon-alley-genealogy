@@ -48,3 +48,7 @@ next-env.d.ts
 # Local development
 .env*.local
 .env.vercel
+
+# Local test/debug files
+*.mjs
+.env.*

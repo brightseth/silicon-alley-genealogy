@@ -93,15 +93,28 @@ export async function POST(request: NextRequest) {
     const shouldAutoApprove = AUTO_APPROVE_ENABLED && confidenceScore >= AUTO_APPROVE_THRESHOLD;
 
     // Generate IDs
-    const personId = uuidv4();
+    let personId = uuidv4();
     const storyId = uuidv4();
     const claimToken = uuidv4();
 
-    // Create person record
-    await sql`
-      INSERT INTO people (id, name, handle, email, created_at)
-      VALUES (${personId}, ${data.name}, ${data.handle || null}, ${data.email || null}, NOW())
-    `;
+    // Check if email already exists
+    if (data.email) {
+      const existing = await sql`SELECT id FROM people WHERE email = ${data.email}`;
+      if (existing.rows.length > 0) {
+        personId = existing.rows[0].id;
+      } else {
+        await sql`
+          INSERT INTO people (id, name, handle, email, created_at)
+          VALUES (${personId}, ${data.name}, ${data.handle || null}, ${data.email}, NOW())
+        `;
+      }
+    } else {
+      // Create person without email
+      await sql`
+        INSERT INTO people (id, name, handle, created_at)
+        VALUES (${personId}, ${data.name}, ${data.handle || null}, NOW())
+      `;
+    }
 
     // Create story record (matching actual schema)
     await sql`
@@ -189,9 +202,11 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Auto-submit error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json({
       success: false,
-      error: 'Failed to submit story'
+      error: 'Failed to submit story',
+      details: process.env.NODE_ENV === 'development' ? errorMessage : undefined
     }, { status: 500 });
   }
 }
