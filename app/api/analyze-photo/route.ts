@@ -1,11 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
+import { withRateLimit } from '@/lib/rate-limit';
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 });
 
 export async function POST(request: NextRequest) {
+  // Rate limit check
+  const rateCheck = withRateLimit(request, 'photo');
+  if (!rateCheck.allowed) {
+    return rateCheck.response;
+  }
+
   try {
     const { image, mimeType } = await request.json();
 

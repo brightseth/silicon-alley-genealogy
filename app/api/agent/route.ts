@@ -1,10 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { runSiliconAlleyAgent, AgentMode } from '@/lib/agent/silicon-alley-agent';
+import { withRateLimit } from '@/lib/rate-limit';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60; // Allow up to 60 seconds for agent processing
 
 export async function POST(request: NextRequest) {
+  // Rate limit check
+  const rateCheck = withRateLimit(request, 'agent');
+  if (!rateCheck.allowed) {
+    return rateCheck.response;
+  }
+
   try {
     const { messages, mode = 'oracle' } = await request.json();
 
@@ -66,8 +73,7 @@ export async function POST(request: NextRequest) {
     console.error('[API] Agent error:', error);
     return NextResponse.json({
       success: false,
-      error: error.message || 'Agent processing failed',
-      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      error: 'Agent processing failed'
     }, { status: 500 });
   }
 }

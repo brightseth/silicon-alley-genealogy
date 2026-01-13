@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import Anthropic from '@anthropic-ai/sdk';
+import { withRateLimit } from '@/lib/rate-limit';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -11,6 +12,12 @@ const anthropic = new Anthropic({
 });
 
 export async function POST(request: NextRequest) {
+  // Rate limit check
+  const rateCheck = withRateLimit(request, 'transcribe');
+  if (!rateCheck.allowed) {
+    return rateCheck.response;
+  }
+
   try {
     const { audio } = await request.json();
 
@@ -119,8 +126,7 @@ If connections are mentioned, list them as comma-separated names.`;
     console.error('Transcription error:', error);
     return NextResponse.json({
       success: false,
-      error: error.message || 'Failed to transcribe audio',
-      details: error.toString()
+      error: 'Failed to transcribe audio'
     }, { status: 500 });
   }
 }
