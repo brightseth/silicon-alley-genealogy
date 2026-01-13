@@ -103,32 +103,24 @@ export async function POST(request: NextRequest) {
       VALUES (${personId}, ${data.name}, ${data.handle || null}, ${data.email || null}, NOW())
     `;
 
-    // Create story record
+    // Create story record (matching actual schema)
     await sql`
       INSERT INTO stories (
-        id, person_id, type, content, where_were_you, what_building,
-        who_inspired, favorite_memory, lessons_learned, transcription,
-        confidence_score, auto_approved, approved, created_at
+        id, person_id, where_were_you, what_were_you_building,
+        who_inspired_you, favorite_memory, lessons_learned, connections_mentioned,
+        status, confidence_score, auto_approved, submitted_at
       )
       VALUES (
-        ${storyId}, ${personId}, 'voice', ${data.transcription || ''},
-        ${data.whereWereYou}, ${data.whatWereYouBuilding},
+        ${storyId}, ${personId}, ${data.whereWereYou}, ${data.whatWereYouBuilding},
         ${data.whoInspiredYou}, ${data.favoriteMemory || null},
-        ${data.lessonsLearned || null}, ${data.transcription || null},
-        ${confidenceScore}, ${shouldAutoApprove}, ${shouldAutoApprove}, NOW()
+        ${data.lessonsLearned || null}, ${data.connections || null},
+        ${shouldAutoApprove ? 'approved' : 'pending'}, ${confidenceScore},
+        ${shouldAutoApprove}, NOW()
       )
     `;
 
-    // Parse and store connections
-    if (data.connections) {
-      const connectionNames = data.connections.split(',').map(s => s.trim()).filter(Boolean);
-      for (const connectionName of connectionNames) {
-        await sql`
-          INSERT INTO connections (id, source_person_id, target_name, relationship, created_at)
-          VALUES (${uuidv4()}, ${personId}, ${connectionName}, 'mentioned', NOW())
-        `;
-      }
-    }
+    // Connections are stored in story.connections_mentioned field
+    // Skip separate connections table insert (different schema)
 
     // Send confirmation email
     if (data.email) {
@@ -160,15 +152,15 @@ export async function POST(request: NextRequest) {
           );
           ipfsMetadataHash = await pinMetadata(personId, metadata);
 
-          // Create NFT card record
+          // Create NFT card record (matching actual schema)
           await sql`
             INSERT INTO nft_cards (
-              id, person_id, claim_token, ipfs_metadata_hash, ipfs_image_hash,
-              status, created_at
+              person_id, claim_token, ipfs_metadata_hash, ipfs_image_hash,
+              claimed, minted_at
             )
             VALUES (
-              ${uuidv4()}, ${personId}, ${claimToken}, ${ipfsMetadataHash},
-              ${imageHash}, 'ready', NOW()
+              ${personId}, ${claimToken}, ${ipfsMetadataHash},
+              ${imageHash}, false, NOW()
             )
           `;
 
