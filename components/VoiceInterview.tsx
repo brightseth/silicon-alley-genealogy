@@ -22,15 +22,22 @@ interface ExtractedData {
 
 interface VoiceInterviewProps {
   onComplete: (data: ExtractedData) => void;
+  autoSubmit?: boolean; // V3: Automatically submit when complete
 }
 
-export default function VoiceInterview({ onComplete }: VoiceInterviewProps) {
+export default function VoiceInterview({ onComplete, autoSubmit = false }: VoiceInterviewProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [extractedData, setExtractedData] = useState<ExtractedData>({});
   const [showReview, setShowReview] = useState(false);
   const [interviewStarted, setInterviewStarted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitResult, setSubmitResult] = useState<{
+    success: boolean;
+    claimUrl?: string;
+    message?: string;
+  } | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -38,6 +45,41 @@ export default function VoiceInterview({ onComplete }: VoiceInterviewProps) {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  // V3: Auto-submit when interview complete (if autoSubmit enabled)
+  useEffect(() => {
+    if (autoSubmit && showReview && !isSubmitting && !submitResult) {
+      handleAutoSubmit();
+    }
+  }, [autoSubmit, showReview]);
+
+  const handleAutoSubmit = async () => {
+    setIsSubmitting(true);
+    try {
+      const response = await fetch('/api/submit-auto', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(extractedData),
+      });
+      const result = await response.json();
+      setSubmitResult({
+        success: result.success,
+        claimUrl: result.claimUrl,
+        message: result.message,
+      });
+      if (result.success) {
+        onComplete(extractedData);
+      }
+    } catch (error) {
+      console.error('Auto-submit error:', error);
+      setSubmitResult({
+        success: false,
+        message: 'Failed to submit. Please try again.',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const startInterview = async () => {
     setInterviewStarted(true);
@@ -234,6 +276,52 @@ export default function VoiceInterview({ onComplete }: VoiceInterviewProps) {
   }
 
   if (showReview) {
+    // V3: Show auto-submit success state
+    if (submitResult?.success && submitResult.claimUrl) {
+      return (
+        <div className="bg-gradient-to-br from-amber-600 to-orange-600 p-8 rounded-xl text-white text-center">
+          <div className="text-6xl mb-4">🎉</div>
+          <h3 className="text-2xl font-bold mb-4">Story Submitted!</h3>
+          <p className="text-amber-100 mb-6">{submitResult.message}</p>
+          <a
+            href={submitResult.claimUrl}
+            className="inline-block bg-white text-amber-600 px-8 py-4 rounded-lg font-bold text-lg hover:bg-amber-50 transition"
+          >
+            Claim Your Pioneer Card →
+          </a>
+        </div>
+      );
+    }
+
+    // V3: Show auto-submit loading state
+    if (isSubmitting) {
+      return (
+        <div className="bg-gradient-to-br from-purple-900 to-slate-900 p-8 rounded-xl text-white text-center">
+          <div className="text-6xl mb-4 animate-bounce">📤</div>
+          <h3 className="text-2xl font-bold mb-4">Submitting Your Story...</h3>
+          <p className="text-purple-200">Creating your Pioneer Card...</p>
+        </div>
+      );
+    }
+
+    // V3: Show error state
+    if (submitResult && !submitResult.success) {
+      return (
+        <div className="bg-gradient-to-br from-red-900 to-slate-900 p-8 rounded-xl text-white text-center">
+          <div className="text-6xl mb-4">❌</div>
+          <h3 className="text-2xl font-bold mb-4">Submission Failed</h3>
+          <p className="text-red-200 mb-6">{submitResult.message}</p>
+          <button
+            onClick={handleAutoSubmit}
+            className="bg-white text-red-600 px-8 py-4 rounded-lg font-bold text-lg hover:bg-red-50 transition"
+          >
+            Try Again
+          </button>
+        </div>
+      );
+    }
+
+    // Standard review screen (when autoSubmit is false)
     return (
       <div className="bg-gradient-to-br from-green-900 to-slate-900 p-8 rounded-xl text-white">
         <h3 className="text-2xl font-bold mb-4">Review Your Story</h3>

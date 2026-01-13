@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import "@coinbase/onchainkit/styles.css"; // V3: OnchainKit styles
+import { WalletProvider } from "@/components/web3/WalletProvider";
 
 export const metadata: Metadata = {
   title: "Silicon Alley Genealogy - 30th Anniversary",
@@ -19,6 +21,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="antialiased">
+        <WalletProvider>
         <nav className="border-b border-gray-200 bg-white/80 backdrop-blur-sm sticky top-0 z-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between h-16 items-center">
@@ -60,6 +63,7 @@ export default function RootLayout({
             </div>
           </div>
         </footer>
+        </WalletProvider>
       </body>
     </html>
   );

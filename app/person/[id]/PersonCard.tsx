@@ -97,10 +97,25 @@ export default function PersonCard({ person, relatedPeople = [] }: { person: Per
             </div>
           )}
 
+          {/* V3: NFT Claim Button */}
           <div className="mt-8 pt-6 border-t border-white/20">
-            <button className="w-full bg-white/20 hover:bg-white/30 backdrop-blur-sm px-4 py-3 rounded-lg font-semibold transition">
-              {person.nft_minted ? 'View Your Card (NFT)' : 'Claim Your Card (NFT)'}
-            </button>
+            {person.nft_minted ? (
+              <a
+                href={`https://opensea.io/assets/base/${process.env.NEXT_PUBLIC_NFT_CONTRACT_ADDRESS || '0x0'}/${person.id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-400 hover:to-purple-400 px-4 py-3 rounded-lg font-semibold transition text-center"
+              >
+                View on OpenSea ↗
+              </a>
+            ) : (
+              <a
+                href={`/claim/${person.id}`}
+                className="block w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 px-4 py-3 rounded-lg font-semibold transition text-center"
+              >
+                Mint Your Pioneer Card (Free) →
+              </a>
+            )}
           </div>
         </div>
 
