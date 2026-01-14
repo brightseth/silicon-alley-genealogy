@@ -1,369 +1,178 @@
-# Silicon Alley Genealogy - Build Roadmap
+# Silicon Alley Genealogy - Roadmap
 
-**Current Status**: ✅ Mobile-friendly, deployed, API ready
-**Live**: https://silicon-alley-genealogy.vercel.app
-**Days until launch**: 21 (Jan 30, 2026)
+## Current State (Jan 13, 2026)
 
----
+### What's Working
+- **105 pioneers** seeded with bios, roles, eras
+- **110 connections** mapped between them
+- **Network visualizer** with timeline slider (buggy but functional)
+- **Voice interview** flow with AI transcription
+- **Auto-approve pipeline** with confidence scoring
+- **NFT claim pages** ready (contracts not deployed)
+- **IPFS + Email** integrations configured
 
-## ✅ Completed (Jan 9)
-
-### Foundation
-- ✅ Next.js app with full design system
-- ✅ Mobile-responsive layout and navigation
-- ✅ 4 pages: Home, Submit, Timeline, People
-- ✅ Vercel Postgres SDK integrated
-- ✅ API routes built (submit, people, timeline)
-- ✅ Database schema created with seed data
-- ✅ Deployed to production
-- ✅ GitHub repository public
-
-### What Works Now
-- ✅ Story submission form (connects to API)
-- ✅ Mobile-friendly navigation
-- ✅ Loading states and error handling
-- ✅ Responsive design (mobile → desktop)
+### What's Not Working
+- Network graph: fixed canvas, no zoom/pan, performance issues
+- Smart contracts: written but not deployed to Base
+- Admin dashboard: none (manual DB queries)
+- Search/filter: minimal
 
 ---
 
-## 🎯 Next Up (Priority Order)
+## Phase 1: Stabilization (Jan 13-17)
 
-### 1. **Database Setup** (10 minutes) - DO THIS FIRST
-**Why**: Nothing works without the database
+### 1.1 Network Visualizer Fix
+**Priority**: High
 
-**Steps**:
-1. Open Vercel dashboard: `vercel open`
-2. Storage → Create Database → Postgres
-3. Connect to project
-4. Run `schema.sql` in SQL editor
-5. Verify seed data (3 people, 5 events)
+Options:
+- **A) Patch existing**: Fix canvas sizing, remove hover from deps, add settle detection
+- **B) D3 rewrite**: Use d3-force + d3-zoom, render to canvas
+- **C) External lib**: vis.js, sigma.js, or react-force-graph
 
-**Result**: Form submissions save, API endpoints return data
+Recommendation: **B** - D3 is battle-tested for this scale
 
----
+Tasks:
+- [ ] Responsive canvas with devicePixelRatio
+- [ ] Zoom/pan controls
+- [ ] Settle detection (stop animation when stable)
+- [ ] Click to focus on node's subgraph
+- [ ] Better initial layout (not spiral)
 
-### 2. **Make Pages Dynamic** (1 hour)
-**Why**: Currently showing mock data, need real database content
+### 1.2 Deploy Smart Contracts
+**Priority**: High
 
-#### Timeline Page (`/timeline`)
-```typescript
-// Update app/timeline/page.tsx
-'use client';
-import { useEffect, useState } from 'react';
+Tasks:
+- [ ] Deploy SiliconAlleyPioneers.sol to Base Sepolia (test)
+- [ ] Test mint flow end-to-end
+- [ ] Deploy to Base mainnet
+- [ ] Update env vars in Vercel
+- [ ] Verify contract on BaseScan
 
-export default function Timeline() {
-  const [events, setEvents] = useState([]);
-  const [loading, setLoading] = useState(true);
+### 1.3 Admin Dashboard
+**Priority**: Medium
 
-  useEffect(() => {
-    fetch('/api/timeline')
-      .then(res => res.json())
-      .then(data => {
-        setEvents(data.data);
-        setLoading(false);
-      });
-  }, []);
-
-  if (loading) return <div>Loading timeline...</div>;
-
-  return (
-    // Render events from database
-  );
-}
-```
-
-#### People Page (`/people`)
-```typescript
-// Update app/people/page.tsx
-// Same pattern - fetch from /api/people
-```
-
-**Result**: Live data from database, grows as stories are submitted
+MVP Features:
+- [ ] View pending stories
+- [ ] Approve/reject with one click
+- [ ] Edit pioneer profiles
+- [ ] View network stats
 
 ---
 
-### 3. **Admin Interface** (2-3 hours)
-**Why**: Need to approve stories, create connections, manage content
+## Phase 2: Content Expansion (Jan 17-22)
 
-#### Create `/app/admin/page.tsx`
-```typescript
-'use client';
-// Protected route (simple password auth for now)
-// Show pending stories
-// Approve/reject stories
-// Create connections between people
-// Add timeline events
-```
+### 2.1 More Pioneers (Target: 200+)
 
-#### Features Needed:
-- ✅ List pending stories
-- ✅ Approve/reject with one click
-- ✅ Edit person details
-- ✅ Create connections (drag & drop?)
-- ✅ Add timeline events
-- ✅ Simple password protection (env var)
+Missing categories:
+- [ ] More agency people (Sapient, Viant, USWeb, Modem Media)
+- [ ] More publishers (Paper, Time Out Digital, early blogs)
+- [ ] Infrastructure (ISPs, hosting, Echo NYC regulars)
+- [ ] Events people (Silicon Alley 2000 organizers)
+- [ ] International connections (London, SF crossover)
 
-**Result**: You can curate submissions, build the genealogy
+Sources:
+- John Borthwick's archives
+- Silicon Alley Reporter back issues
+- @NY archives
+- LinkedIn (manual, not scraping)
+- Direct outreach
 
----
+### 2.2 More Connections
 
-### 4. **Enhanced Story Display** (1 hour)
-**Why**: Approved stories should be visible on the site
+Tasks:
+- [ ] Review each pioneer, add 3-5 connections each
+- [ ] Add company affiliations (who worked where)
+- [ ] Add investment relationships (who funded whom)
+- [ ] Add mentorship chains
+- [ ] Verify years/dates
 
-#### Add `/app/stories/page.tsx`
-- Show all approved stories
-- Filter by person
-- Search functionality
-- Featured stories section
+### 2.3 Timeline Events
 
-#### Update Homepage
-- Show latest approved stories
-- Featured pioneer of the day
-- Statistics (X stories, Y people, Z connections)
-
-**Result**: Visitors see the growing genealogy
+Key events to add:
+- [ ] Company foundings (with exact dates)
+- [ ] IPOs and acquisitions
+- [ ] Key parties/gatherings
+- [ ] Publication launches
+- [ ] Office locations/moves
 
 ---
 
-### 5. **Social Sharing** (2 hours)
-**Why**: Viral growth for the event
+## Phase 3: Polish (Jan 22-27)
 
-#### Player Card Sharing
-- Generate shareable image for each person
-- "Share your Silicon Alley card" button
-- Twitter/X integration
-- Download as PNG
+### 3.1 UX Improvements
+- [ ] Mobile-responsive network view
+- [ ] People page: search, filter by era/role
+- [ ] Person page: show connections visually
+- [ ] Better voice interview prompts
+- [ ] Loading states and error handling
 
-#### Technology:
-- Use `@vercel/og` for dynamic OG images
-- Or canvas API for client-side generation
+### 3.2 Social Features
+- [ ] Shareable pioneer cards (OG images work)
+- [ ] Twitter/LinkedIn share buttons
+- [ ] "I was there" badge system
+- [ ] Connection suggestions ("You might know...")
 
-**Result**: People share their cards, drive traffic
-
----
-
-### 6. **Email Notifications** (1 hour)
-**Why**: Let people know when their story is approved
-
-#### Setup:
-- Use Vercel's email (Resend integration)
-- Or SendGrid API
-- Send on story approval
-- Include link to their player card
-
-**Result**: Better user experience, re-engagement
+### 3.3 Performance
+- [ ] Network graph optimization for 200+ nodes
+- [ ] API caching
+- [ ] Image optimization
+- [ ] Lazy loading
 
 ---
 
-### 7. **NFT Smart Contract** (4-6 hours)
-**Why**: Player cards as on-chain collectibles
+## Phase 4: Launch (Jan 28-31)
 
-#### Steps:
-1. **Write ERC-721 Contract** (Solidity)
-   ```solidity
-   // SiliconAlleyPioneers.sol
-   // Metadata: name, role, era, connections
-   // Soulbound (non-transferable)
-   ```
+### Pre-Launch (Jan 27)
+- [ ] Final data review
+- [ ] Test all flows on production
+- [ ] Prepare demo script
+- [ ] Brief John Borthwick
 
-2. **Deploy to Base Testnet**
-   - Test minting
-   - Verify metadata
-   - Test claiming
+### Launch Day (Jan 28)
+- [ ] Monitor for issues
+- [ ] Be ready to hotfix
+- [ ] Collect real-time feedback
 
-3. **Deploy to Base Mainnet**
-   - Production contract
-   - Add to Vercel env vars
-
-4. **Build Claiming UI**
-   - Connect wallet (RainbowKit)
-   - Mint/claim card
-   - View on OpenSea
-
-**Result**: Each pioneer gets an NFT card
+### During Event (Jan 28-31)
+- [ ] Encourage submissions at the event
+- [ ] Live network updates as people connect
+- [ ] NFT minting demos
+- [ ] Capture photos for timeline
 
 ---
 
-### 8. **Data Collection Campaign** (Ongoing)
-**Why**: Need 100+ stories for impact
+## Technical Debt
 
-#### Activities:
-- Email 800 RSVPs with submission link
-- John's archive integration
-- Social media posts
-- Direct outreach to key people
+### Must Fix Before Launch
+- [ ] Network graph stability
+- [ ] Contract deployment
+- [ ] Error handling in submit flow
 
-#### Tools Needed:
-- Email template
-- Social media graphics
-- QR code for event
-- Print materials
-
-**Result**: Rich, comprehensive genealogy
+### Can Wait
+- [ ] Test coverage
+- [ ] TypeScript strict mode
+- [ ] API rate limiting (basic exists)
+- [ ] Database indexes review
 
 ---
 
-### 9. **Advanced Features** (Nice-to-have)
-**Why**: Enhance the experience
+## Open Questions
 
-- **Connection Visualization**: Graph view of relationships
-- **Search & Filter**: Find people by company, year, role
-- **Timeline Expansion**: Add photos, videos
-- **Voice Recordings**: Audio oral histories
-- **Map View**: Where people were in NYC (1995-96)
-- **Company Pages**: Deep dives on Silicon Alley companies
-- **AI Insights**: Auto-suggest connections from stories
+1. **Network graph library choice** - D3, vis.js, or patch existing?
+2. **Connection data collection** - Manual curation vs community submission?
+3. **NFT economics** - Free mint? Gas sponsorship? Edition limits?
+4. **Post-event maintenance** - Who owns this long-term?
 
 ---
 
-### 10. **/vibe Integration** (Post-event)
-**Why**: Ongoing community engagement
+## Success Metrics
 
-- Share stories in /vibe
-- Terminal-native browsing
-- Agent conversations about Silicon Alley
-- Living history archive
-
----
-
-## 📅 Suggested Timeline
-
-### Week 1 (Jan 10-17)
-- ✅ Database setup (10 min)
-- ✅ Make pages dynamic (1 hr)
-- ✅ Admin interface MVP (3 hrs)
-- ✅ Email notifications (1 hr)
-- 🎯 **Milestone**: Can collect & approve stories
-
-### Week 2 (Jan 18-24)
-- ✅ Social sharing (2 hrs)
-- ✅ Enhanced story display (1 hr)
-- ✅ NFT contract (testnet) (4 hrs)
-- ✅ Data collection campaign
-- 🎯 **Milestone**: Viral growth, NFTs work
-
-### Week 3 (Jan 25-30)
-- ✅ NFT contract (mainnet)
-- ✅ Polish & bug fixes
-- ✅ Content curation
-- ✅ Event preparation
-- 🎯 **Milestone**: Launch ready!
-
-### Jan 28-31
-- 🎉 **LAUNCH AT EVENT**
-- Display at venue
-- Live submissions
-- NFT minting station
-- Physical player cards
+- **Pioneers**: 200+ by launch
+- **Connections**: 300+ by launch
+- **Stories submitted**: 50+ during event
+- **NFTs minted**: 25+ during event
+- **No critical bugs** during event
 
 ---
 
-## 💡 Quick Wins (Do These First)
-
-1. **Database setup** (10 min) - Unlocks everything
-2. **Dynamic timeline** (30 min) - Shows it's real
-3. **Dynamic people** (30 min) - Growing directory
-4. **Admin password** (15 min) - You can manage content
-5. **Story approval** (1 hr) - Core workflow works
-
-These 5 things = fully functional genealogy in **~3 hours**
-
----
-
-## 🛠️ Technical Debt to Address
-
-- Add TypeScript strict mode
-- Add unit tests (Jest)
-- Add E2E tests (Playwright)
-- Improve error boundaries
-- Add logging (Sentry)
-- Performance monitoring
-- SEO optimization
-- Accessibility audit (a11y)
-
----
-
-## 📊 Success Metrics
-
-### By Jan 20
-- ✅ 20+ stories submitted
-- ✅ 50+ people in database
-- ✅ 20+ connections mapped
-- ✅ Admin workflow smooth
-
-### By Jan 27
-- ✅ 50+ stories submitted
-- ✅ 100+ people in database
-- ✅ 50+ connections mapped
-- ✅ NFTs mintable
-
-### By Jan 30 (Launch)
-- ✅ 100+ stories
-- ✅ 200+ people
-- ✅ 100+ connections
-- ✅ 50+ NFTs minted
-- ✅ 1000+ site visitors
-
----
-
-## 🚀 How to Use This Roadmap
-
-### Daily Building Sessions
-1. Pick one item from "Next Up"
-2. Build for 1-3 hours
-3. Deploy and test
-4. Move to next item
-
-### Weekend Sprints
-- Saturday: NFT contract + minting UI
-- Sunday: Admin interface + content curation
-
-### Final Push (Jan 25-30)
-- Polish, polish, polish
-- Test everything
-- Load real content
-- Prepare for event
-
----
-
-## 📞 Quick Commands
-
-```bash
-# Start building
-cd ~/Projects/silicon-alley-genealogy
-npm run dev
-
-# Deploy
-git add . && git commit -m "Feature: description" && git push
-vercel --prod
-
-# View logs
-vercel logs
-
-# Database query
-# Use Vercel dashboard → Storage → Query
-```
-
----
-
-## 🎯 Current Priority
-
-**RIGHT NOW**: Set up the database (10 minutes)
-
-Then you can:
-1. Start collecting real stories
-2. Build admin interface
-3. Make pages dynamic
-4. Everything else follows
-
-**Next command to run**:
-```bash
-vercel open
-# Then: Storage → Create Database → Postgres
-```
-
----
-
-**The foundation is done. Now build on it! 🚀**
-
-21 days to create the definitive Silicon Alley genealogy.
+*Last updated: Jan 13, 2026*
